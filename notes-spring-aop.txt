@@ -1,0 +1,24 @@
+. Add Maven Dependency for aspectjrt, aspectjweaver
+2. Terminologies
+   	1. Advice
+   	2. Joinpoint
+   	3. Pointcut
+   	4. Aspect
+   	5. Weaving
+3. Define the class with @Aspect and @Component annotation
+4. Add aspects in the component-scan
+    <context:component-scan base-package="com.nsv.teamapp.aspects"/>
+5. Enable Spring AOP
+    add aop name space
+    add <aop: aspectj-autoproxy />  -> In XML
+    @EnableAspectJAutoProxy -> Java Config
+6. Advices
+    @Before - JoinPoint
+   @After - JoinPoint
+   @Around - ProceedingJoinPoint - has proceed() method.
+   @AfterThrowing - Method should return exception
+   @AfterReturning - Method should return something
+
+Links
+https://www.journaldev.com/2583/spring-aop-example-tutorial-aspect-advice-pointcut-joinpoint-annotations
+https://www.dineshonjava.com/spring-aop-tutorial-with-example-aspect-advice-pointcut-joinpoint/

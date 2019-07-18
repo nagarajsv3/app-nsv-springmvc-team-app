@@ -1,0 +1,295 @@
+1. LDAP - LightWeight Directory Access Protocol / Active Directory / DB
+2. Authentication vs Authorization
+
+Steps
+1. Add spring-security-web & spring-security-config & commons-logging maven dependency
+2. Configure filter springSecurityFilter using DelegatingFilterProxy Class
+ <filter>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+3.Create spring-security.xml under webapp/WEB-INF with security namespace and xsd
+<!--    http interceptor intercepts the requests and does authentication-->
+    <security:http auto-config="true" use-expressions="false">
+            <security:intercept-url pattern="/**" access="ROLE_USER" />
+        </security:http>
+
+<!--    authentication manager defines the users who can access the application-->
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:user-service>
+            <!--perform single user authentication -->
+                <security:user name="naga" authorities="ROLE_USER" />
+            </security:user-service>
+        </security:authentication-provider>
+    </security:authentication-manager>
+4. Update the <context-param> with security-config.xml in the web.xml
+<!--    Location of the XML files that defines root application context
+    Applied by ContextLoaderListener-->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:spring/app-config.xml,/WEB-INF/security-config.xml</param-value>
+    </context-param>
+
+-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+Multi User Database Authentication
+1. Copy security-config.xml to security-db-config.xml
+2. Update context-param in web.xml to point to security-db-config.xml
+3. Create users and authorities table
+// contains user information
+create table users(
+  username varchar(100) not null primary key,
+  password varchar(100) not null,
+  enabled boolean not null
+);
+
+//contains username and role which the user is in
+create table authorities(
+  username varchar(100) not null,
+  authority varchar(50) not null,
+  constraint fk_username_users
+  foreign key(username) references users(username)
+);
+
+//create unique index using username and authority
+create unique index idx_username on authorities(username, authority);
+
+4.  Create users and authorities
+insert into users values('naga',  'admin', true);
+insert into users values('baba',  'admin', true);
+insert into authorities values('naga','ROLE_USER');
+insert into authorities values('baba','ROLE_USER');
+
+5. Configure authentication-manager in security-db-config.xml to use <security:jdbc-user-service>
+    <!--authentication manager - multi user authentication using db- <security:jdbc-user-service> dataSource is defined in app-config.xml-->
+    <!--    authentication manager defines the users who can access the application-->
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:jdbc-user-service data-source-ref="dataSource"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+6. Defining Multiple Roles - Comma Separated User Roles
+    6a. Comma separated - Worked
+        <!--    http interceptor intercepts the requests and does authentication-->
+        <security:http auto-config="true" use-expressions="false">
+            <security:intercept-url pattern="/**" access="ROLE_USER,ROLE_ADMIN"/>
+        </security:http>
+
+    6b. Defining one more <security:intercept-url> element - Did not work
+            <!--Defining multiple roles-Using a new <security:intercept-url> element-->
+            <security:intercept-url pattern="/**" access="ROLE_USER"/>
+            <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>
+
+-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+Spring Security to Custom Login Page
+1. create security-custom-login-config.xml using security-db-config.xml
+Update <security:http> element
+    <!--    http interceptor intercepts the requests and does authentication-->
+    <!-- use-expressons should be true; by default it is true-->
+    <security:http auto-config="true">
+        <security:intercept-url pattern="/login" access="permitAll()"/>
+        <security:intercept-url pattern="/logout" access="permitAll()"/>
+        <security:intercept-url pattern="/accessDenied" access="permitAll()"/>
+        <security:intercept-url pattern="/**" access="hasRole('ROLE_USER')"/>
+        <security:form-login login-page="/login" username-parameter="username" password-parameter="password"
+                             default-target-url="/" authentication-failure-url="/accessDenied" />
+    </security:http>
+2. Update <context-param> element in web.xml with security-custom-login-config.xml
+3. Create the LoginController with @Controller annotation
+//When user logsout kill the session
+    @RequestMapping(value = "/accessDenied", method = RequestMethod.GET)
+    public String performLogout(HttpServletRequest request, HttpServletResponse response){
+        //kill the session
+        //load authentication object from Spring Security Context
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication != null){
+            //perform a logout
+            new SecurityContextLogoutHandler().logout(request, response, authentication);
+        }
+        return "redirect:/login";
+    }
+4. Create jsp pages for accessDenied, login and logout
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+<h1>Login Page</h1>
+<c:url var="loginVal" value="/login"/>
+<form method="post" action="${loginVal}">
+    <table>
+        <tr>
+            <td>
+                User Name
+            </td>
+            <td>
+                <input type="text" name="username">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Password
+            </td>
+            <td>
+                <input type="password" name="password">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="hidden" value="${_csrf.token}" name="${_csrf.parameterName}">
+                <input type="submit" value="Login">
+            </td>
+        </tr>
+
+    </table>
+
+</form>
+
+</body>
+</html>
+
+-------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
+Use Spring Security Tag Library to control the access to the resources based on the role
+1. Add Maven Dependency for spring-security-taglibs
+<!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-taglibs -->
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-taglibs</artifactId>
+    <version>4.2.3.RELEASE</version>
+</dependency>
+2. Add security taglib custom tag
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+3. Enclose the resource you want to have special access
+        <security:authorize access="hasRole('ROLE_ADMIN')">
+            <a href="${pageContext.request.contextPath}/team/add">Add New Team</a><br/>
+        </security:authorize>
+4. Use <security:authentication property="principal"/> to fetch all the details about the user and his roles
+5. Use <security:authentication property="principal.username"/> to fetch only the user name
+6. Update index.jsp file
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+<html>
+<head>
+    <title>Team Home</title>
+</head>
+<body>
+<c:url value="/logout" var="logout"/>
+<h1>Teams Home Page</h1><br/> <a href="${logout}">Logout</a>
+
+<h6> Welcome <security:authentication property="principal"/>
+    <security:authentication property="principal.username"/></h6>
+    <p>
+        Context Path : <c:out value="${pageContext.request.contextPath}"/><br/>
+        <security:authorize access="hasRole('ROLE_ADMIN')">
+            <a href="${pageContext.request.contextPath}/team/add">Add New Team</a><br/>
+        </security:authorize>
+        <a href="${pageContext.request.contextPath}/team/list">List Teams</a><br/>
+    </p>
+
+    Add Team Message : ${message}
+</body>
+
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+Spring Method Level Security
+1. Add security namespace in the mvc-config.xml
+2. Enable method level security by     <security:global-method-security secured-annotations="enabled" />
+3. Annotate the method @Secured("ROLE_ADMIN")
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+using Encryption for passwords stored in DB and Configuring Spring to use it (MD5 & BCrypt)
+1. Encrypt the password
+Md5PasswordEncoder md5PasswordEncoder = new Md5PasswordEncoder();
+        String md5EncodedPassword = md5PasswordEncoder.encodePassword("admin", null);
+        System.out.println("MD5 Encoded="+md5EncodedPassword);
+
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+        String bcryptencoded = bCryptPasswordEncoder.encode("admin");
+        System.out.println("BCrypt Encoded="+bcryptencoded);
+        //$2a$10$cKSBEbhBtVjuUVvHra4Y9eGueyyR9llOEV8xFonM8UV3l41xLgBbq
+2. Update the db with the password
+update users set password='$2a$10$cKSBEbhBtVjuUVvHra4Y9eGueyyR9llOEV8xFonM8UV3l41xLgBbq' where username in ('naga','baba','varne');
+3. Create a security-encrypted-password-config.xml with <security:password-encoder>
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:password-encoder hash="bcrypt" />
+            <security:jdbc-user-service data-source-ref="dataSource"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+4. Update <context-param> in web.xml with security-encrypted-password-config.xml
+------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
+Spring LDAP
+1. Add Maven Dependencies
+<dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.5.6</version>
+            <!--<scope>test</scope>-->
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.directory.server/apacheds-all -->
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-all</artifactId>
+            <version>1.5.5</version>
+            <!--<scope>test</scope>-->
+        </dependency>
+
+2. Create the users.ldif file under resources
+3. Create security-ldap.xml
+    <security:ldap-server ldif="classpath:users.ldif" />
+    <security:authentication-manager>
+        <security:ldap-authentication-provider group-search-filter="member={0}" group-search-base="ou=groups" user-search-base="ou=people" user-search-filter="uid={0}" />
+    </security:authentication-manager>
+4. Update context-root in web.xml file
+
+-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+Make our App use Https
+1. https uses ssl authentication - secured socket layer for communication
+2. Types of certs
+    a. self signed certs
+    b. Certificate providers like Digicert
+3. Generate certificate using keytool of JDK
+  C:\Nagaraj\Servers\apache-tomcat-7.0.81\apache-tomcat-7.0.81\bin>keytool -genkey -alias tomcat -keyalg RSA -keystore tomcat
+  Password : changeit
+  Fill SomeInfo
+4. Update the tomcat's server.xml file with keystore file location and password
+Default https port is 8443
+C:\Nagaraj\Servers\apache-tomcat-7.0.81\apache-tomcat-7.0.81\conf\server.xml
+<Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol"
+               maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
+               clientAuth="false" sslProtocol="TLS"
+			   keystoreFile="C:\Nagaraj\Servers\apache-tomcat-7.0.81\apache-tomcat-7.0.81\bin\tomcat"
+			   keystorePassword="changeit"/>
+5. Create security-ssl-login.xml file and update intercept-url attribute requires-channel="https"
+<security:http auto-config="true">
+        <security:intercept-url pattern="/login" access="permitAll()" requires-channel="https"/>
+        <security:intercept-url pattern="/logout" access="permitAll()" requires-channel="https"/>
+        <security:intercept-url pattern="/accessDenied" access="permitAll()" requires-channel="https"/>
+        <security:intercept-url pattern="/**" access="hasRole('ROLE_USER')" requires-channel="https"/>
+        <security:form-login login-page="/login" username-parameter="username" password-parameter="password"
+                             default-target-url="/" authentication-failure-url="/accessDenied" />
+    </security:http>
+6. Update <context-param> of web.xml

@@ -1,0 +1,65 @@
+Types
+1. Declarative Tx Mg (Container managed txns - Preferred)
+2. Programmatic Tx Mg (User managed txns)
+
+Transaction Properties (ACID)
+A-Atomic
+C-Consistent
+I-Isolation
+D-Durable
+
+Isolation Types
+Read Committed(Preferred)
+Read Uncommitted
+Default
+Repeated reads(Row Lock)
+serializable read (Table Lock)
+
+Read Types
+1. Dirty Read
+2. Phantom Read
+3. Repeatable reads
+4. Non repeatable reads(Preferred)
+
+Steps
+1. spring-tx maven dependency
+2. Use @Transactional annotation at service level (can be applied at class / method level)
+3. Define TransactionManager (Interface : PlatformTransactionManager)
+	3a. Java Config
+		1. Annotate Java Config with @EnableTransactionManagement
+		2. Define TransactionManager bean
+		@Bean
+		public PlatformTransactionManager getTransactionManager(){
+			return new HibernateTransactionManager(sessionFactory());
+		}
+	3b. XML Config
+		1. Add spring tx name and schema
+		1. Define <tx:annotation-driven /> element
+		2. Define TransactionManager bean
+
+	<tx:annotation-driven />
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+Propagation
+1. Required
+@Transactional(rollBackFor=RunTimeException.class, isolation=Isolation.DEFAULT, propagation=Propagation.REQUIRED)
+2. RequiresNew
+@Transactional(rollBackFor=RunTimeException.class, isolation=Isolation.DEFAULT, propagation=Propagation.REQUIRES_NEW)
+3. Never
+4. Supports
+@Transactional(propagation=Propagation.SUPPORTS, readOnly=true)
+
+Programmatic Tx Mg :
+1. Transactional Template (Preferred)
+2. Platform Tx Mg
+
+Txn Template
+1. Create Txn Tem bean
+2. In the service class, define the Txn Tem variable
+3. Use Service Constructor to set the dependency with Platform Txn Mgr
+4. Whichever the method, you want to perform in Transaction, txntem.execute(Ananymous Inner type of TxnRollback() ) & override the doInTransaction method. Inside this method do the required operation and catch the exception and do the status.rollback if it occurs
+
+https://docs.spring.io/spring/docs/4.2.x/spring-framework-reference/html/transaction.html

@@ -1,0 +1,26 @@
+1. We need only 3 Dependencies for the spring mvc application
+    spring-webmvc, jstl, servlet-api
+2. How to run the apps on Jetty Server
+  1a. Add Maven Build Dependency
+    <build>
+          <plugins>
+              <plugin>
+                  <groupId>org.eclipse.jetty</groupId>
+                  <artifactId>jetty-maven-plugin</artifactId>
+                  <version>9.2.2.v20140723</version>
+              </plugin>
+  1b. Maven Run Settings
+    jetty:run -Djetty.port=8888
+3. How to deploy applications on Tomcat
+   2a. Edit Configuration -> Tomcat Server -> Select the tomcat home directory -> Select the JRE
+   2b. Deployment tab -> Add the application in the deployment section War file type.
+   Run the tomcat. Application will automcatically run
+4. GenerationType.AUTO problems with Hibernate. Use @GenericGenerator(name="native", strategy="native")
+https://www.thoughts-on-java.org/5-things-you-need-to-know-when-using-hibernate-with-mysql/
+5. Hibernate the caches the queries. so perform session.flush() after update and delete.
+6. LazyInitializationException in Hibernate
+https://javarevisited.blogspot.com/2014/04/orghibernatelazyinitializationException-Could-not-initialize-proxy-no-session-hibernate-java.html
+http://forum.spring.io/forum/spring-projects/data/68701-lazyinitializationexception-hibernate-spring-help
+7. Difference between Hibernate.get() vs Hibernate.load()
+8. Use <form:hidden value="${}" to pass the primary key
+<form:hidden path="id" value="${team.id}"/>

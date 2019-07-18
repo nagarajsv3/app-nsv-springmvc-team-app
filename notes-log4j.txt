@@ -1,0 +1,4 @@
+1. Add Apache Log4j Maven Dependency
+2. Add log4j.xml file under src/main/resources
+3. Declare the Logger
+private static final Logger LOGGER = Logger.getLogger(MyService.class);

@@ -45,8 +45,13 @@ Types in Programmatic Transaction Manager
 
 Spring AOP - Aspect Oriented Programming
 To address cross cutting concerns
+Spring AOP uses aspectj framework
+
+1. aspectj framework allows to define joinpoint at constructor, methods , classes, variables
+2. spring aop allows only method level joinpoints
 
 Advice
 JoinPoint
 PointCut
 Aspect
+Weaving

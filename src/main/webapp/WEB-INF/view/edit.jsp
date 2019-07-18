@@ -9,6 +9,9 @@
     <table>
         <tbody>
         <tr>
+            <td><form:hidden path="id"></form:hidden></td>
+        </tr>
+        <tr>
             <td>Name</td>
             <td><form:input path="name"></form:input></td>
         </tr>

@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Repository
-//@Transactional
+@Transactional
 public class TeamRepository {
 
     @Autowired
@@ -25,10 +25,10 @@ public class TeamRepository {
         session.flush();
         session.close();
     }
-
+    @Transactional(rollbackFor = RuntimeException.class, isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
     public Team getTeam(long id){
         Session session = sessionFactory.openSession();
-        Team team = (Team)session.load(Team.class, id);
+        Team team = (Team)session.get(Team.class, id);
         session.close();
         return team;
     }

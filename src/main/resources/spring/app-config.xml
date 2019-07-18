@@ -12,6 +12,9 @@
     <context:annotation-config/>
     <context:component-scan base-package="com.nsv.jsmbaba.teamapp.repository" />
     <context:component-scan base-package="com.nsv.jsmbaba.teamapp.service" />
+    <context:component-scan base-package="com.nsv.jsmbaba.teamapp.aspect" />
+
+    <aop:aspectj-autoproxy/>
 
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" id="propertyPlaceholderConfigurer">
@@ -42,4 +45,12 @@
             </props>
         </property>
     </bean>
+
+    <!--transaction manager-BEGIN-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <bean class="org.springframework.orm.hibernate4.HibernateTransactionManager" id="transactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+    <!--transaction manager-END-->
+
 </beans>
