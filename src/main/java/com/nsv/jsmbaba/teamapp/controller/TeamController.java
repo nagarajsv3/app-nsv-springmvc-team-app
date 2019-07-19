@@ -3,6 +3,7 @@ package com.nsv.jsmbaba.teamapp.controller;
 import com.nsv.jsmbaba.teamapp.domain.Team;
 import com.nsv.jsmbaba.teamapp.service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -50,7 +51,9 @@ public class TeamController {
     }
 
 
+
     @RequestMapping(value = "/delete", method = RequestMethod.GET)
+    @Secured("ROLE_ADMIN")
     public ModelAndView deleteTeam(@RequestParam("teamId") long id){
         ModelAndView modelAndView = new ModelAndView("home");
         teamService.deleteTeam(teamService.getTeam(id));

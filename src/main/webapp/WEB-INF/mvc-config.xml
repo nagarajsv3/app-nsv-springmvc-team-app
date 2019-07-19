@@ -20,6 +20,9 @@
         <property name="suffix"><value>.jsp</value></property>
     </bean>
 
+    <security:global-method-security secured-annotations="enabled"/>
+
+
 
 
 </beans>

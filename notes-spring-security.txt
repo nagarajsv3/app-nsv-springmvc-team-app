@@ -205,9 +205,13 @@ Use Spring Security Tag Library to control the access to the resources based on 
 ------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------
 Spring Method Level Security
-1. Add security namespace in the mvc-config.xml
+1. Add security namespace and security schema definition in the mvc-config.xml
+       xmlns:security="http://www.springframework.org/schema/security"
+       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
 2. Enable method level security by     <security:global-method-security secured-annotations="enabled" />
-3. Annotate the method @Secured("ROLE_ADMIN")
+3. Annotate the method
+@Secured("ROLE_ADMIN")
+We can also use @PreAuthorise and @PostAuthorise methods
 ------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------
 using Encryption for passwords stored in DB and Configuring Spring to use it (MD5 & BCrypt)

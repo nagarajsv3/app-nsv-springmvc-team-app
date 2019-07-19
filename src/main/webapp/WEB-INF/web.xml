@@ -4,45 +4,56 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
 
-  <display-name>TeamApp</display-name>
+    <display-name>TeamApp</display-name>
 
 
-  <!--    Location of the XML files that defines root application context
-      Applied by ContextLoaderListener-->
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>classpath:spring/app-config.xml, /WEB-INF/spring-security-basic-config.xml</param-value>
-  </context-param>
+    <!--    Location of the XML files that defines root application context
+        Applied by ContextLoaderListener-->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <!--Spring Security Basic-->
+        <!--<param-value>classpath:spring/app-config.xml, /WEB-INF/spring-security-1-basic-config.xml</param-value>-->
+        <!--Spring Security database-->
+        <!--<param-value>classpath:spring/app-config.xml, /WEB-INF/spring-security-2-db-config.xml</param-value>-->
+        <!--Spring Security Custom Logindatabase-->
+        <!--<param-value>classpath:spring/app-config.xml, /WEB-INF/spring-security-3-custom-login-config.xml</param-value>-->
+        <!--Spring Security Password Encoded Using BcryptPasswordEncoder-->
+        <!--spring-security-4-password-encoded-config-->
+        <!--<param-value>classpath:spring/app-config.xml, /WEB-INF/spring-security-4-password-encoded-config.xml</param-value>-->
+        <!--spring security ldap-->
+        <param-value>classpath:spring/app-config.xml, /WEB-INF/spring-security-5-ldap-config.xml</param-value>
 
-  <listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
+    </context-param>
 
-  <servlet>
-    <servlet-name>dispatcher-servlet</servlet-name>
-    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-    <init-param>
-      <param-name>contextConfigLocation</param-name>
-      <param-value>/WEB-INF/mvc-config.xml</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
-  <servlet-mapping>
-    <servlet-name>dispatcher-servlet</servlet-name>
-    <url-pattern>/</url-pattern>
-  </servlet-mapping>
+    <servlet>
+        <servlet-name>dispatcher-servlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>/WEB-INF/mvc-config.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>dispatcher-servlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
 
 
-  <!--Spring Security Filter-->
+    <!--Spring Security Filter-->
     <!--name has to be springSecurityFilterChain-->
-  <filter>
-    <filter-name>springSecurityFilterChain</filter-name>
-    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>springSecurityFilterChain</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
 </web-app>
